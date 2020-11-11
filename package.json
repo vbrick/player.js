@@ -1,10 +1,9 @@
 {
   "title": "Player.js",
-  "name": "player.js",
+  "name": "@vbrick/player.js",
   "version": "0.2.0",
   "homepage": "http://github.com/vbrick/player.js",
   "main": "dist/player-0.2.0.js",
-  "private": true,
   "repository": {
     "type": "git",
     "url": "git://github.com/vbrick/player.js.git"
