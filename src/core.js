@@ -33,6 +33,12 @@ playerjs.addEvent = function(elem, type, eventHandle) {
 playerjs.log = function(){
   playerjs.log.history = playerjs.log.history || [];   // store logs to an array for reference
   playerjs.log.history.push(arguments);
+
+  // sanity check to avoid excess memory usage
+  var MAX_HISTORY_LENGTH = 256;
+  if (playerjs.log.history.length > MAX_HISTORY_LENGTH) {
+    playerjs.log.history.shift();
+  }
   if(window.console && playerjs.DEBUG){
     window.console.log( Array.prototype.slice.call(arguments) );
   }
