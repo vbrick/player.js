@@ -36,16 +36,32 @@
             <p>
               Enter the URL of the IFrame SRC URL you wish to test. We will highlight errors.
             </p>
-              <form id="url" method="GET" action="./test.html">
+              <form id="form" method="GET" action="./test.html">
                 <div class="row collapse">
                   <div class="small-10 columns">
-                    <input type="text" name="url" placeholder="IFrame SRC URL" value="iframe.html">
+                    <input type="text" name="url" id="url" placeholder="IFrame SRC URL" value="iframe.html?audio=true" />
                   </div>
                   <div class="small-2 columns">
                     <a href="#" class="button postfix">Go</a>
                   </div>
+                </div>
+                <div class="row collapse">
+                  <div class="small-6 columns">
+                    <label for="autoplay">Autoplay video 
+                      <input type="checkbox" name="autoplay" id="autoplay" value="true" checked />
+                    </label>
+                  </div>
+                  <div class="small-6 columns">
+                    <label for="audio">Test audio 
+                      <input type="checkbox" name="audio" id="audio" value="true" checked />
+                    </label>
+                  </div>
+                </div>
               </form>
-            </div>
+              <div id="play-button" style="display: none">
+                <p>Press this button once ready test is complete to continue.</p>
+                <button onclick="player && player.play()">Play Video</button>
+              </div>
           </div>
           <div class="large-6 columns">
             <div id="iframe" class="video"></div>
@@ -166,12 +182,12 @@
           <div class="large-1 test-mark columns"></div>
         </div>
 
-        <div id="methodGetMuted" class="row test-case">
+        <div id="methodGetaudio" class="row test-case">
           <div class="large-3 columns">
-            <h4>getMuted</h4>
+            <h4>getaudio</h4>
           </div>
           <div class="large-4 columns">
-            <p>Determine if the media is muted.</p>
+            <p>Determine if the media is audio.</p>
           </div>
           <div class="large-4 test-result columns"></div>
           <div class="large-1 test-mark columns"></div>

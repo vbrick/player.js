@@ -1,6 +1,8 @@
 /*global jQuery:true, playerjs:true, console:true */
 
 (function($, document, window){
+  var DEFAULT_AUTOPLAY = true;
+  var DEFAULT_TESTAUDIO = true;
 
   // Allows use to wait a certain ammount of time before we fail.
   var Waiter = function(testCase, time, t, names, msg, next){
@@ -47,17 +49,21 @@
 
 
   // Test Case.
-  var TestCase = function(player){
-    this.init(player);
+  var TestCase = function(player, autoPlay, testAudio){
+    this.init(player, autoPlay, testAudio);
   };
 
-  TestCase.prototype.init = function(player){
+  TestCase.prototype.init = function(player, autoPlay, testAudio){
     this.player = player;
-    this.tests = [
-      'ready', 'listeners', 'play', 'timeupdate', 'paused',
-      'volume', 'mute', 'duration', 'currentTime', 'loop',
-      'ended'
-    ];
+
+    this.autoPlay = autoPlay === undefined ? DEFAULT_AUTOPLAY : !!autoPlay;
+    this.testAudio = testAudio === undefined ? DEFAULT_TESTAUDIO : !!testAudio;
+
+    this.tests = ['ready', 'listeners', 'play', 'timeupdate', 'paused'];
+    if (this.testAudio) {
+      this.tests.push('volume', 'mute');
+    }
+    this.tests.push('duration', 'currentTime', 'loop', 'ended');
     this.index = 0;
     this.waiters = [];
     this.stopped = false;
@@ -66,7 +72,6 @@
     this.successes = 0;
     this.failures = 0;
     this.cautions = 0;
-
   };
 
   TestCase.prototype.stop = function(){
@@ -170,7 +175,6 @@
   };
 
   TestCase.prototype.listeners = function(){
-    this.wait(5000, 'method', ['addEventListener', 'removeEventListener'], 'Could not add/remove event listeners. This method requires play and pause to work correctly.');
     var count = 0;
 
     this.player.on('play', function(){
@@ -192,7 +196,17 @@
       }
       count++;
     }, this);
-    this.player.play();
+
+    if (this.autoPlay) {
+      this.wait(5000, 'method', ['addEventListener', 'removeEventListener'], 'Could not add/remove event listeners. This method requires play and pause to work correctly.');
+      if (!this.testAudio) {
+        this.player.mute();
+      } else {
+        this.player.play();
+      }
+    } else {
+      console.log('Waiting for play event...');
+    }
   };
 
   TestCase.prototype.play = function(){
@@ -492,8 +506,16 @@
     }, 200);
   };
 
-  $('#url a').on('click', function(){
-    $('#url').submit();
+  $('#form a').on('click', function(){
+    var options = {
+      url: $('#url').val(),
+      autoplay: $('#autoplay:checked').length > 0 ? 'true' : 'false',
+      audio: $('#audio:checked').length > 0 ? 'true' : 'false'
+    };
+    window.location.search = '?' + $.param(options);
+    // $('#form').submit();
+    // loadPlayer(options.url, !!options.autoplay, !!options.muted);
+
     return false;
   });
 
@@ -504,24 +526,49 @@
       return i;
     }, {});
 
-    if (params.url) {
-      $('input').val(params.url);
-
-      // add the iframe.
-      $('#iframe').html('<iframe width="600" height="400" src="'+params.url+'" frameborder="0" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media"></iframe>');
-
-      var player = new playerjs.Player($('iframe')[0]);
-      var testCase = new TestCase(player);
-
-      // for testing purposes.
-      window.player = player;
-
-      if (params.test){
-        testCase.tests = [params.test];
-      }
-
-      testCase.test();
+    if (params.audio) {
+      var boolValue = !/false|off|no/i.test(params.audio);
+      params.audio = boolValue;
+      $('#audio').prop('checked', boolValue);
     }
+    if (params.autoplay) {
+      var boolValue = !/false|off|no/i.test(params.autoplay);
+      params.autoplay = boolValue;
+      $('#autoplay').prop('checked', boolValue);
+      if (!boolValue) {
+        $('#play-button').show();
+      }
+    }
+
+    if (params.url) {
+      $('#url').val(params.url);
+
+      loadPlayer(params.url, params);
+    }
+  }
+
+  function loadPlayer(iframeUrl, options) {
+    if (!options) { options = {}; }
+
+    var autoplay = options.autoplay;
+    var audio = options.audio;
+    var test = options.test;
+
+    // add the iframe.
+    $('#iframe').html('<iframe width="600" height="400" src="' + iframeUrl + '" frameborder="0" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media"></iframe>');
+
+    var player = new playerjs.Player($('iframe')[0]);
+    var testCase = new TestCase(player, autoplay, audio);
+
+    // for testing purposes.
+    window.player = player;
+    window.testCase = testCase;
+
+    if (test){
+      testCase.tests = [test];
+    }
+
+    testCase.test();
   }
 
 })(jQuery, document, window);

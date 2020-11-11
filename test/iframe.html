@@ -13,7 +13,7 @@
   </head>
 
   <body>
-    <video id="video" class="video-js vjs-fill" controls preload="auto" data-setup="{}" poster="https://cdn.jsdelivr.net/npm/big-buck-bunny-1080p@0.0.6/poster.jpg">
+    <video id="video" class="video-js vjs-fill" controls preload="auto" data-setup="{}" poster="https://cdn.jsdelivr.net/npm/big-buck-bunny-1080p@0.0.6/poster.jpg" playsinline>
       <!-- <source src="assets/demo.mp4" type='video/mp4' /> -->
       <source src="https://cdn.jsdelivr.net/npm/big-buck-bunny-1080p@0.0.6/video.mp4" type='video/mp4' />
     </video>
@@ -23,6 +23,10 @@
     <script>
       if (/debug=true/.test(window.location.search)) {
         playerjs.DEBUG = true;
+      }
+
+      if (/muted=true/.test(window.location.search)) {
+        document.getElementById('video').setAttribute('muted', 'muted');
       }
 
       var video = document.getElementById('video');
