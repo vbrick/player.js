@@ -1,6 +1,10 @@
 Player.js
 =========
 
+**Note: this is a fork of the original [embedly library](https://github.com/embedly/player.js)**
+
+---
+
 A JavaScript library for interacting with iframes that support Player.js
 spec.
 
@@ -25,16 +29,10 @@ player.on('ready', () => {
 Install
 -------
 
-Player.js is hosted on Embedly's CDN. :
-
-```html
-<script type="text/javascript" src="//cdn.embed.ly/player-0.1.0.min.js"></script>
-```
-
-install via npm :
+Install via npm :
 
 ```sh
-npm install player.js
+npm install @vbrick/player.js
 ```
 
 Ready

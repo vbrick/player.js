@@ -1,11 +1,12 @@
-/*! Player.js - v0.1.1 - 2020-11-09
-* http://github.com/embedly/player.js
+/*! Player.js - v0.2.0 - 2020-11-09
+
+* http://github.com/vbrick/player.js
 * Copyright (c) 2017 Embedly; Licensed BSD */
 (function(window, document){
 var playerjs = {};
 
 playerjs.DEBUG = false;
-playerjs.VERSION = '0.1.1';
+playerjs.VERSION = '0.2.0';
 playerjs.CONTEXT = 'player.js';
 playerjs.POST_MESSAGE = !!window.postMessage;
 
@@ -37,6 +38,12 @@ playerjs.addEvent = function(elem, type, eventHandle) {
 playerjs.log = function(){
   playerjs.log.history = playerjs.log.history || [];   // store logs to an array for reference
   playerjs.log.history.push(arguments);
+
+  // sanity check to avoid excess memory usage
+  var MAX_HISTORY_LENGTH = 256;
+  if (playerjs.log.history.length > MAX_HISTORY_LENGTH) {
+    playerjs.log.history.shift();
+  }
   if(window.console && playerjs.DEBUG){
     window.console.log( Array.prototype.slice.call(arguments) );
   }
@@ -801,7 +808,8 @@ playerjs.HTML5Adapter.prototype.init = function(video){
 
   video.addEventListener('progress', function(){
     receiver.emit('buffered', {
-      percent: video.buffered.length
+      // fix per luwes - https://github.com/embedly/player.js/issues/79
+      percent: video.buffered.end(video.buffered.length - 1) / video.duration
     });
   });
 
