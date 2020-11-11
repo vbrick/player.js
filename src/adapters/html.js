@@ -36,7 +36,8 @@ playerjs.HTML5Adapter.prototype.init = function(video){
 
   video.addEventListener('progress', function(){
     receiver.emit('buffered', {
-      percent: video.buffered.length
+      // fix per luwes - https://github.com/embedly/player.js/issues/79
+      percent: video.buffered.end(video.buffered.length - 1) / video.duration
     });
   });
 
