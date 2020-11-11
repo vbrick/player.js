@@ -1,0 +1,37 @@
+env:
+  es6: true
+  browser: true
+extends: 'eslint:recommended'
+parserOptions:
+  ecmaVersion: 2015
+rules:
+  indent:
+    - error
+    - 2
+  'no-mixed-spaces-and-tabs':
+    - error
+  'linebreak-style':
+    - error
+    - unix
+  # quotes:
+  #   - warn
+  #   - single
+  semi:
+    - error
+    - always
+  'no-else-return':
+    - error
+  'max-len':
+    - warn
+    - ignoreComments: true
+      ignoreStrings: true
+      ignoreTrailingComments: false
+      ignoreTemplateLiterals: true
+  'operator-linebreak':
+    - warn
+  'space-before-function-paren':
+    - error
+    - anonymous: ignore
+      named: never
+      asyncArrow: always
+
