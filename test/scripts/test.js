@@ -508,7 +508,7 @@
       $('input').val(params.url);
 
       // add the iframe.
-      $('#iframe').html('<iframe width="600" height="400" src="'+params.url+'"></iframe>');
+      $('#iframe').html('<iframe width="600" height="400" src="'+params.url+'" frameborder="0" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media"></iframe>');
 
       var player = new playerjs.Player($('iframe')[0]);
       var testCase = new TestCase(player);
