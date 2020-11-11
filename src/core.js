@@ -1,7 +1,7 @@
 var playerjs = {};
 
 playerjs.DEBUG = false;
-playerjs.VERSION = '0.0.11';
+playerjs.VERSION = '0.1.1';
 playerjs.CONTEXT = 'player.js';
 playerjs.POST_MESSAGE = !!window.postMessage;
 

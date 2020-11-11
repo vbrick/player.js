@@ -1,11 +1,11 @@
-/*! Player.js - v0.1.0 - 2017-10-24
+/*! Player.js - v0.1.1 - 2020-11-09
 * http://github.com/embedly/player.js
 * Copyright (c) 2017 Embedly; Licensed BSD */
 (function(window, document){
 var playerjs = {};
 
 playerjs.DEBUG = false;
-playerjs.VERSION = '0.0.11';
+playerjs.VERSION = '0.1.1';
 playerjs.CONTEXT = 'player.js';
 playerjs.POST_MESSAGE = !!window.postMessage;
 
