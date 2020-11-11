@@ -25,11 +25,16 @@
         playerjs.DEBUG = true;
       }
 
+      var video = document.getElementById('video');
+
       if (/muted=true/.test(window.location.search)) {
-        document.getElementById('video').setAttribute('muted', 'muted');
+        video.setAttribute('muted', 'muted');
       }
 
-      var video = document.getElementById('video');
+      if (/autoplay=true/.test(window.location.search)) {
+        video.setAttribute('autoplay', 'autoplay');
+      }
+
 
       videojs("video", {}, function(){
         var adapter = new playerjs.VideoJSAdapter(this);

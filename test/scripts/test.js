@@ -201,9 +201,9 @@
       this.wait(5000, 'method', ['addEventListener', 'removeEventListener'], 'Could not add/remove event listeners. This method requires play and pause to work correctly.');
       if (!this.testAudio) {
         this.player.mute();
-      } else {
-        this.player.play();
       }
+
+      this.player.play();
     } else {
       console.log('Waiting for play event...');
     }
@@ -529,15 +529,23 @@
     if (params.audio) {
       var boolValue = !/false|off|no/i.test(params.audio);
       params.audio = boolValue;
-      $('#audio').prop('checked', boolValue);
+    } else {
+      params.audio = DEFAULT_TESTAUDIO;
     }
+
+    $('#audio').prop('checked', params.audio);
+
     if (params.autoplay) {
       var boolValue = !/false|off|no/i.test(params.autoplay);
       params.autoplay = boolValue;
-      $('#autoplay').prop('checked', boolValue);
-      if (!boolValue) {
-        $('#play-button').show();
-      }
+    } else {
+      params.autoplay = DEFAULT_AUTOPLAY;
+    }
+
+    $('#autoplay').prop('checked', params.autoplay);
+
+    if (!params.autoplay) {
+      $('#play-button').show();
     }
 
     if (params.url) {
