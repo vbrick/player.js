@@ -35,6 +35,10 @@ Install via npm :
 npm install @vbrick/player.js
 ```
 
+Test
+-------
+To test a video embed for compatibility use [this page](https://vbrick.github.io/player.js/test/test.html).
+
 Ready
 -----
 

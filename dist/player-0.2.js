@@ -1,4 +1,4 @@
-/*! Player.js - v0.2.0 - 2020-12-01
+/*! Player.js - v0.2.1 - 2020-12-01
 
 * http://github.com/vbrick/player.js
 * Copyright (c) 2017 Embedly; Licensed BSD */
