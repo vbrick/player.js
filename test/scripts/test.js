@@ -1,8 +1,13 @@
 /*global jQuery:true, playerjs:true, console:true */
 
 (function($, document, window){
-  var DEFAULT_AUTOPLAY = true;
-  var DEFAULT_TESTAUDIO = true;
+  var DEFAULT_OPTIONS = {
+    autoPlay: true,
+    testAudio: true,
+    timeoutSeconds: 10.0
+  };
+  // max is 5 minute timeout
+  var MAX_TIMEOUT = 5 * 60 * 1000;
 
   // Allows use to wait a certain ammount of time before we fail.
   var Waiter = function(testCase, time, t, names, msg, next){
@@ -49,18 +54,24 @@
 
 
   // Test Case.
-  var TestCase = function(player, autoPlay, testAudio){
-    this.init(player, autoPlay, testAudio);
+  var TestCase = function(player, options){
+    this.init(player, options || {});
   };
 
-  TestCase.prototype.init = function(player, autoPlay, testAudio){
+  TestCase.prototype.init = function(player, options){
     this.player = player;
 
-    this.autoPlay = autoPlay === undefined ? DEFAULT_AUTOPLAY : !!autoPlay;
-    this.testAudio = testAudio === undefined ? DEFAULT_TESTAUDIO : !!testAudio;
+    /** @type {typeof DEFAULT_OPTIONS} */
+    this.options = Object.assign({}, DEFAULT_OPTIONS, options);
+
+    var timeout = (this.options.timeoutSeconds * 1000);
+    if (timeout <= 0 || isNaN(timeout) || timeout > MAX_TIMEOUT) {
+      timeout = MAX_TIMEOUT;
+    }
+    this.options.timeout = timeout;
 
     this.tests = ['ready', 'listeners', 'play', 'timeupdate', 'paused'];
-    if (this.testAudio) {
+    if (this.options.testAudio) {
       this.tests.push('volume', 'mute');
     }
     this.tests.push('duration', 'currentTime', 'loop', 'ended');
@@ -139,13 +150,28 @@
 
   TestCase.prototype.success = function(t, name){
     this.successes += 1;
+    this.clearPending(t, name);
     var selector = this.selector(t, name);
     $(selector).addClass('success');
     $(selector+' .test-mark').html('<i class="fa fa-check"></i>');
   };
 
+  TestCase.prototype.pending = function(t, name, msg){
+    var selector = this.selector(t, name);
+    $(selector).addClass('pending');
+    $(selector+' .test-result').text(msg);
+    $(selector+' .test-mark').html('<i class="fa fa-exclamation"></i>');
+  };
+
+  TestCase.prototype.clearPending = function(t, name) {
+    var selector = this.selector(t, name);
+    $(selector).removeClass('pending');
+    $(selector+' .test-result').text('');
+  }
+
   TestCase.prototype.caution = function(t, name){
     this.cautions += 1;
+    this.clearPending(t, name);
     var selector = this.selector(t, name);
     $(selector).addClass('caution');
     $(selector+' .test-result').text('This implementation does not support "'+name+'"');
@@ -154,6 +180,7 @@
 
   TestCase.prototype.fail = function(t, name, msg){
     this.failures += 1;
+    this.clearPending(t, name);
     var selector = this.selector(t, name);
     $(selector).addClass('error');
     $(selector+' .test-result').text(msg);
@@ -167,7 +194,10 @@
 
   /* TESTS */
   TestCase.prototype.ready = function(){
-    this.wait(9500, 'event', ['ready'], 'Failed to get ready');
+    this.wait(this.options.timeout, 'event', ['ready'], 'Failed to get ready');
+
+    this.pending('event', 'ready', 'Waiting for ready event');
+
     this.player.on('ready', function(){
       this.success('event', 'ready');
       this.next();
@@ -177,7 +207,7 @@
   TestCase.prototype.listeners = function(){
     var count = 0;
 
-    this.player.on('play', function(){
+    var onPlay = (function () {
       if (count === 0){
         this.player.pause();
         this.player.off('play');
@@ -195,24 +225,40 @@
         this.player.play();
       }
       count++;
-    }, this);
+    }).bind(this);
 
-    if (this.autoPlay) {
-      this.wait(5000, 'method', ['addEventListener', 'removeEventListener'], 'Could not add/remove event listeners. This method requires play and pause to work correctly.');
-      if (!this.testAudio) {
+    this.player.on('play', onPlay);
+
+    if (this.options.autoPlay) {
+      this.wait(this.options.timeout, 'method', ['addEventListener', 'removeEventListener'], 'Could not add/remove event listeners. This method requires play and pause to work correctly.');
+      if (!this.options.testAudio) {
         this.player.mute();
       }
 
       this.player.play();
     } else {
       console.log('Waiting for play event...');
+
+      this.pending('event', 'play', 'Autoplay not set, press play on video to continue test');
+      this.player.getPaused((function (isPaused) {
+        // already moved forward, ignore
+        if (count > 0) {
+          return;
+        }
+        if (!isPaused) {
+          console.log('Video is already playing');
+          // onPlay();
+        } else {
+          console.log('Video currently paused');
+        }
+      }).bind(this));
     }
   };
 
   TestCase.prototype.play = function(){
     console.log('Testing play');
 
-    this.wait(8000, ['method', 'event'], ['play', 'pause'], 'Failed play');
+    this.wait(this.options.timeout, ['method', 'event'], ['play', 'pause'], 'Failed play');
 
     this.player.on('play', function(){
       this.success('method', 'play');
@@ -260,7 +306,7 @@
         this.player.off('timeupdate');
 
         this.player.on('pause', function(){
-          this.player.off('pause')
+          this.player.off('pause');
           this.next();
         }, this);
 
@@ -510,7 +556,8 @@
     var options = {
       url: $('#url').val(),
       autoplay: $('#autoplay:checked').length > 0 ? 'true' : 'false',
-      audio: $('#audio:checked').length > 0 ? 'true' : 'false'
+      audio: $('#audio:checked').length > 0 ? 'true' : 'false',
+      timeout: $('#timeout').val()
     };
     window.location.search = '?' + $.param(options);
     // $('#form').submit();
@@ -520,6 +567,7 @@
   });
 
   if (window.location.search) {
+    /** @type {{url?: string, audio?: string | boolean, autoplay?: string | boolean, timeout?: string | number, test?: string | boolean}} */
     var params = window.location.search.substr(1).split('&').reduce(function(i, v){
       var p=v.split('=');
       i[p[0]] = decodeURIComponent(p[1]);
@@ -530,7 +578,7 @@
       var boolValue = !/false|off|no/i.test(params.audio);
       params.audio = boolValue;
     } else {
-      params.audio = DEFAULT_TESTAUDIO;
+      params.audio = DEFAULT_OPTIONS.testAudio;
     }
 
     $('#audio').prop('checked', params.audio);
@@ -539,7 +587,7 @@
       var boolValue = !/false|off|no/i.test(params.autoplay);
       params.autoplay = boolValue;
     } else {
-      params.autoplay = DEFAULT_AUTOPLAY;
+      params.autoplay = DEFAULT_OPTIONS.autoPlay;
     }
 
     $('#autoplay').prop('checked', params.autoplay);
@@ -548,25 +596,37 @@
       $('#play-button').show();
     }
 
+    if (params.timeout && !isNaN(params.timeout)) {
+      var val = parseFloat(params.timeout);
+      params.timeout = val;
+    } else {
+      params.timeout = DEFAULT_OPTIONS.timeoutSeconds;
+    }
+
+    $('#timeout').val(params.timeout);
+
     if (params.url) {
       $('#url').val(params.url);
 
-      loadPlayer(params.url, params);
+      loadPlayer(params.url, {
+        autoPlay: params.autoplay,
+        testAudio: params.audio,
+        test: params.test,
+        timeoutSeconds: params.timeout
+      });
     }
   }
 
   function loadPlayer(iframeUrl, options) {
     if (!options) { options = {}; }
 
-    var autoplay = options.autoplay;
-    var audio = options.audio;
     var test = options.test;
 
     // add the iframe.
     $('#iframe').html('<iframe width="600" height="400" src="' + iframeUrl + '" frameborder="0" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media"></iframe>');
 
     var player = new playerjs.Player($('iframe')[0]);
-    var testCase = new TestCase(player, autoplay, audio);
+    var testCase = new TestCase(player, options);
 
     // for testing purposes.
     window.player = player;

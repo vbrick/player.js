@@ -210,6 +210,8 @@ body.caption .caption-actions {
 
 body.test .success {
   background: #43AC6A; }
+body.test .pending {
+  background: #EBE54D; }
 body.test .caution {
   background: #f08a24; }
 body.test .error {
@@ -218,8 +220,8 @@ body.test .row .test-case {
   border: 1px solid #aaa;
   margin: 15px auto;
   padding: 10px; }
-  body.test .row .test-case h4 {
-    color: #333; }
+body.test .row .test-case h4 {
+  color: #333; }
 body.test .test-mark i {
   color: #fff;
   font-size: 3em;
