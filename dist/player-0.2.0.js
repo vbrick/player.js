@@ -1,4 +1,4 @@
-/*! Player.js - v0.2.0 - 2020-11-09
+/*! Player.js - v0.2.0 - 2020-12-01
 
 * http://github.com/vbrick/player.js
 * Copyright (c) 2017 Embedly; Licensed BSD */
@@ -576,7 +576,7 @@ playerjs.Receiver.prototype.init = function(events, methods){
   this.isReady = false;
 
   // Bind the window message.
-  this.origin = playerjs.origin(document.referrer);
+  this.origin = '';
 
   //Create a holder for all the methods.
   this.methods = {};
@@ -603,13 +603,11 @@ playerjs.Receiver.prototype.init = function(events, methods){
 
 playerjs.Receiver.prototype.receive = function(e){
   // Only want to listen to events that came from our origin.
-  if (e.origin !== this.origin){
-    // update our origin to match our parent
-    if (e.source === window.parent) {
-      this.origin = e.origin;
-    } else {
-      return false;
-    }
+  // update our origin to match our parent if not set
+  if (!this.origin && e.source === window.parent){
+    this.origin = e.origin;
+  } else if (e.origin !== this.origin) {
+    return false;
   }
 
   // Browsers that support postMessage also support JSON.
