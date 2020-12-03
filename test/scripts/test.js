@@ -247,7 +247,7 @@
         }
         if (!isPaused) {
           console.log('Video is already playing');
-          // onPlay();
+          onPlay();
         } else {
           console.log('Video currently paused');
         }
